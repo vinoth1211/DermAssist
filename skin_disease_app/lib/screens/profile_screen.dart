@@ -244,8 +244,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ListTile(
                             leading: const Icon(Icons.history),
                             title: const Text('Medical History'),
+                            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                             onTap: () {
-                              // Navigate to medical history
+                              Navigator.pushNamed(context, '/medical_history');
                             },
                           ),
 
@@ -253,8 +254,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ListTile(
                             leading: const Icon(Icons.bookmark),
                             title: const Text('Saved Articles'),
+                            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                             onTap: () {
-                              // Navigate to saved articles
+                              Navigator.pushNamed(context, '/saved_articles');
                             },
                           ),
 
@@ -262,8 +264,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ListTile(
                             leading: const Icon(Icons.calendar_today),
                             title: const Text('My Appointments'),
+                            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                             onTap: () {
-                              // Navigate to appointments
+                              Navigator.pushNamed(context, '/appointments');
                             },
                           ),
 
@@ -271,8 +274,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ListTile(
                             leading: const Icon(Icons.settings),
                             title: const Text('Settings'),
+                            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                             onTap: () {
-                              // Navigate to settings
+                              Navigator.pushNamed(context, '/settings');
                             },
                           ),
 

@@ -327,4 +327,129 @@ class DiseaseService extends ChangeNotifier {
       return [];
     }
   }
+  
+  // Get user health records for medical history
+  Future<List<HealthRecord>> getUserHealthRecords(String userId) async {
+    try {
+      if (!_isLoading) {
+        _isLoading = true;
+        _error = null;
+        // Use future microtask to avoid setState during build
+        Future.microtask(() => notifyListeners());
+      }
+      
+      final snapshot = await _firestore
+          .collection('health_records')
+          .where('userId', isEqualTo: userId)
+          .orderBy('date', descending: true)
+          .get();
+      
+      final records = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return HealthRecord.fromMap({
+          'id': doc.id,
+          ...data,
+        });
+      }).toList();
+      
+      _isLoading = false;
+      // Use future microtask to avoid setState during build
+      Future.microtask(() => notifyListeners());
+      return records;
+    } catch (e) {
+      _isLoading = false;
+      _error = 'Error getting health records: $e';
+      // Use future microtask to avoid setState during build
+      Future.microtask(() => notifyListeners());
+      return [];
+    }
+  }
+  
+  // Add a new health record
+  Future<bool> addHealthRecord(HealthRecord record) async {
+    try {
+      if (!_isLoading) {
+        _isLoading = true;
+        _error = null;
+        // Use future microtask to avoid setState during build
+        Future.microtask(() => notifyListeners());
+      }
+      
+      // If it's a new record, create a new document
+      if (record.id.startsWith('manual_')) {
+        await _firestore.collection('health_records').add(record.toMap());
+      } else {
+        // Otherwise update existing document
+        await _firestore.collection('health_records').doc(record.id).set(record.toMap());
+      }
+      
+      _isLoading = false;
+      // Use future microtask to avoid setState during build
+      Future.microtask(() => notifyListeners());
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _error = 'Error adding health record: $e';
+      // Use future microtask to avoid setState during build
+      Future.microtask(() => notifyListeners());
+      return false;
+    }
+  }
+}
+
+class HealthRecord {
+  final String id;
+  final String userId;
+  final DateTime date;
+  final String type; // Diagnosis, Checkup, Treatment, Scan
+  final String condition;
+  final String description;
+  final String severity; // Mild, Moderate, Severe
+  final String treatment;
+  final String notes;
+  final String? imageUrl;
+
+  HealthRecord({
+    required this.id,
+    required this.userId,
+    required this.date,
+    required this.type,
+    required this.condition,
+    required this.description,
+    required this.severity,
+    required this.treatment,
+    required this.notes,
+    this.imageUrl,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'userId': userId,
+      'date': Timestamp.fromDate(date),
+      'type': type,
+      'condition': condition,
+      'description': description,
+      'severity': severity,
+      'treatment': treatment,
+      'notes': notes,
+      'imageUrl': imageUrl,
+    };
+  }
+
+  factory HealthRecord.fromMap(Map<String, dynamic> map) {
+    return HealthRecord(
+      id: map['id'],
+      userId: map['userId'],
+      date: map['date'] is Timestamp
+          ? (map['date'] as Timestamp).toDate()
+          : DateTime.parse(map['date']),
+      type: map['type'],
+      condition: map['condition'],
+      description: map['description'],
+      severity: map['severity'],
+      treatment: map['treatment'],
+      notes: map['notes'] ?? '',
+      imageUrl: map['imageUrl'],
+    );
+  }
 }

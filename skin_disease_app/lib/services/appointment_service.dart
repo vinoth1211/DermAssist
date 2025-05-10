@@ -142,25 +142,34 @@ class AppointmentService extends ChangeNotifier {
   
   // Constructor
   AppointmentService() {
-    getAllDermatologists();
+    // Initialize without immediately fetching data
+    // This prevents errors during widget building
+    Future.microtask(() {
+      getAllDermatologists();
+    });
   }
   
   // Get all dermatologists
   Future<List<DermatologistModel>> getAllDermatologists() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-    
     try {
+      if (!_isLoading) {
+        _isLoading = true;
+        _error = null;
+        // Use future microtask to avoid setState during build
+        Future.microtask(() => notifyListeners());
+      }
+      
       final snapshot = await _firestore.collection('dermatologists').get();
       _doctors = snapshot.docs.map((doc) => DermatologistModel.fromMap(doc.data(), doc.id)).toList();
       _isLoading = false;
-      notifyListeners();
+      // Use future microtask to avoid setState during build
+      Future.microtask(() => notifyListeners());
       return _doctors;
     } catch (e) {
       _isLoading = false;
       _error = 'Error fetching dermatologists: $e';
-      notifyListeners();
+      // Use future microtask to avoid setState during build
+      Future.microtask(() => notifyListeners());
       return [];
     }
   }

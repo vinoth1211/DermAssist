@@ -6,7 +6,19 @@ import 'package:skin_disease_app/screens/splash_screen.dart';
 import 'package:skin_disease_app/screens/login_screen.dart';
 import 'package:skin_disease_app/screens/register_screen.dart';
 import 'package:skin_disease_app/screens/home_screen.dart';
-import 'package:skin_disease_app/screens/test_login_screen.dart';
+import 'package:skin_disease_app/screens/profile_screen.dart';
+import 'package:skin_disease_app/screens/appointments_screen.dart';
+import 'package:skin_disease_app/screens/medical_history_screen.dart';
+import 'package:skin_disease_app/screens/article_screen.dart';
+import 'package:skin_disease_app/screens/article_detail_screen.dart';
+import 'package:skin_disease_app/screens/dermatologist_screen.dart';
+import 'package:skin_disease_app/screens/disease_detection_screen.dart';
+import 'package:skin_disease_app/screens/chatbot_screen.dart';
+import 'package:skin_disease_app/screens/saved_articles_screen.dart';
+import 'package:skin_disease_app/screens/settings_screen.dart';
+import 'package:skin_disease_app/screens/privacy_policy_screen.dart';
+import 'package:skin_disease_app/screens/terms_of_service_screen.dart';
+import 'package:skin_disease_app/screens/doctor_detail_screen.dart';
 import 'package:skin_disease_app/services/auth_service.dart';
 import 'package:skin_disease_app/services/disease_service.dart';
 import 'package:skin_disease_app/services/appointment_service.dart';
@@ -22,10 +34,9 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    print('Firebase initialized successfully');
+    // Firebase initialized successfully
   } catch (e) {
-    print('Failed to initialize Firebase: $e');
-    // Continue with limited functionality
+    // Continue with limited functionality if Firebase fails
   }
   
   runApp(const MyApp());
@@ -47,7 +58,7 @@ class MyApp extends StatelessWidget {
         builder: (context, authService, _) {
           return MaterialApp(
             title: 'DermAssist',
-            debugShowCheckedModeBanner: false,
+            debugShowCheckedModeBanner: false, // No debug banner in UI
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: ThemeMode.system,
@@ -58,7 +69,35 @@ class MyApp extends StatelessWidget {
               '/register': (context) => const RegisterScreen(),
               '/home': (context) => const HomeScreen(),
               '/auth': (context) => const AuthWrapper(),
-              '/test_login': (context) => const TestLoginScreen(),
+              '/profile': (context) => const ProfileScreen(),
+              '/appointments': (context) => const AppointmentsScreen(),
+              '/medical_history': (context) => const MedicalHistoryScreen(),
+              '/articles': (context) => const ArticleScreen(),
+              '/saved_articles': (context) => const SavedArticlesScreen(),
+              '/settings': (context) => const SettingsScreen(),
+              '/privacy_policy': (context) => const PrivacyPolicyScreen(),
+              '/terms_of_service': (context) => const TermsOfServiceScreen(),
+              '/dermatologists': (context) => const DermatologistScreen(),
+              '/disease_detection': (context) => const DiseaseDetectionScreen(),
+              '/chatbot': (context) => const ChatbotScreen(),
+            },
+            onGenerateRoute: (settings) {
+              if (settings.name == '/article_detail') {
+                final args = settings.arguments as Map<String, dynamic>;
+                return MaterialPageRoute(
+                  builder: (context) => ArticleDetailScreen(
+                    articleId: args['articleId'],
+                  ),
+                );
+              } else if (settings.name == '/doctor_detail') {
+                final args = settings.arguments as Map<String, dynamic>;
+                return MaterialPageRoute(
+                  builder: (context) => DoctorDetailScreen(
+                    doctorId: args['doctorId'],
+                  ),
+                );
+              }
+              return null;
             },
           );
         },

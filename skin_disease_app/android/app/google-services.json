@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "188142561999",
+    "project_id": "dermocare-4068a",
+    "storage_bucket": "dermocare-4068a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:188142561999:android:703af93fc35dca730f65ba",
+        "android_client_info": {
+          "package_name": "com.dermo.dermocare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnC_i8ogsI0ZL4eLKHHBAANqgRYbd8f50"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

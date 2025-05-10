@@ -416,6 +416,112 @@ class AuthService extends ChangeNotifier {
       return false;
     }
   }
+  
+  // Change Password
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    if (_user == null || _isGuestMode || _isTestMode) return false;
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      // Re-authenticate user before changing password
+      final credential = EmailAuthProvider.credential(
+        email: _user!.email!,
+        password: currentPassword,
+      );
+      
+      await _user!.reauthenticateWithCredential(credential);
+      
+      // Update password
+      await _user!.updatePassword(newPassword);
+      
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      print('Password change error: ${e.code} - ${e.message}');
+      switch (e.code) {
+        case 'wrong-password':
+          _error = 'Current password is incorrect.';
+          break;
+        case 'weak-password':
+          _error = 'New password is too weak. Please use a stronger password.';
+          break;
+        case 'requires-recent-login':
+          _error = 'Please log in again before changing your password.';
+          break;
+        default:
+          _error = 'Failed to change password: ${e.message}';
+      }
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      print('Unexpected error changing password: $e');
+      _error = 'An unexpected error occurred. Please try again.';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+  
+  // Delete Account
+  Future<bool> deleteAccount({required String password}) async {
+    if (_user == null || _isGuestMode || _isTestMode) return false;
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      // Re-authenticate user before deleting account
+      final credential = EmailAuthProvider.credential(
+        email: _user!.email!,
+        password: password,
+      );
+      
+      await _user!.reauthenticateWithCredential(credential);
+      
+      // Delete user data from Firestore
+      await _firestore.collection('users').doc(_user!.uid).delete();
+      
+      // Delete user account
+      await _user!.delete();
+      
+      // Reset states
+      _user = null;
+      _userModel = null;
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      print('Account deletion error: ${e.code} - ${e.message}');
+      switch (e.code) {
+        case 'wrong-password':
+          _error = 'Password is incorrect.';
+          break;
+        case 'requires-recent-login':
+          _error = 'Please log in again before deleting your account.';
+          break;
+        default:
+          _error = 'Failed to delete account: ${e.message}';
+      }
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      print('Unexpected error deleting account: $e');
+      _error = 'An unexpected error occurred. Please try again.';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
 }
 
 // A simple fake User class for test mode that implements the necessary properties

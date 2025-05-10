@@ -52,6 +52,8 @@ class _DermatologistScreenState extends State<DermatologistScreen> {
   Widget build(BuildContext context) {
     final appointmentService = Provider.of<AppointmentService>(context);
     final filteredDoctors = _getFilteredDoctors(appointmentService.doctors);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
     
     return Scaffold(
       appBar: AppBar(
@@ -61,11 +63,11 @@ class _DermatologistScreenState extends State<DermatologistScreen> {
         children: [
           // Search bar
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
             child: CustomTextField(
               controller: _searchController,
               labelText: 'Search',
-              hintText: 'Search by name, specialization, or hospital',
+              hintText: isSmallScreen ? 'Search by name or specialty' : 'Search by name, specialization, or hospital',
               prefixIcon: Icons.search,
               onChanged: (value) {
                 setState(() {
@@ -78,19 +80,19 @@ class _DermatologistScreenState extends State<DermatologistScreen> {
           // Doctor filters
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            padding: EdgeInsets.symmetric(horizontal: isSmallScreen ? 12.0 : 16.0),
             child: Row(
               children: [
                 _buildFilterChip('All', true),
                 _buildFilterChip('Highest Rated', false),
                 _buildFilterChip('Available Today', false),
-                _buildFilterChip('Online Consultation', false),
+                _buildFilterChip('Online', false),
                 _buildFilterChip('Nearest', false),
               ],
             ),
           ),
           
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           
           // Doctors list
           Expanded(
@@ -114,24 +116,22 @@ class _DermatologistScreenState extends State<DermatologistScreen> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            if (_searchQuery.isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _searchQuery = '';
-                                      _searchController.clear();
-                                    });
-                                  },
-                                  child: const Text('Clear search'),
-                                ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Try adjusting your search',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
                               ),
+                            ),
                           ],
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isSmallScreen ? 12.0 : 16.0,
+                          vertical: isSmallScreen ? 8.0 : 12.0
+                        ),
                         itemCount: filteredDoctors.length,
                         itemBuilder: (context, index) {
                           final doctor = filteredDoctors[index];
@@ -143,7 +143,7 @@ class _DermatologistScreenState extends State<DermatologistScreen> {
       ),
     );
   }
-  
+
   Widget _buildFilterChip(String label, bool isSelected) {
     return Padding(
       padding: const EdgeInsets.only(right: 8.0),
@@ -151,15 +151,20 @@ class _DermatologistScreenState extends State<DermatologistScreen> {
         label: Text(label),
         selected: isSelected,
         onSelected: (selected) {
-          // Implement filter functionality here
+          // TODO: Implement filtering logic
         },
       ),
     );
   }
-  
+
   Widget _buildDoctorListItem(DermatologistModel doctor) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 600;
+    final textScale = MediaQuery.of(context).textScaleFactor;
+    
     return Card(
-      margin: const EdgeInsets.only(bottom: 16.0),
+      margin: EdgeInsets.only(bottom: isSmallScreen ? 10.0 : 16.0),
+      elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -174,121 +179,157 @@ class _DermatologistScreenState extends State<DermatologistScreen> {
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Doctor image
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                child: doctor.imageUrl != null && doctor.imageUrl!.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(40),
-                        child: Image.network(
-                          doctor.imageUrl!,
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => const Icon(
-                            Icons.person,
-                            size: 40,
-                            color: Colors.grey,
-                          ),
-                        ),
+              // Doctor profile image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(isSmallScreen ? 10 : 12),
+                child: (doctor.imageUrl != null && doctor.imageUrl!.isNotEmpty)
+                    ? Image.network(
+                        doctor.imageUrl!,
+                        width: isSmallScreen ? 70 : 90,
+                        height: isSmallScreen ? 90 : 110,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: isSmallScreen ? 70 : 90,
+                            height: isSmallScreen ? 90 : 110,
+                            color: Colors.grey[300],
+                            child: Icon(
+                              Icons.person,
+                              size: isSmallScreen ? 40 : 50,
+                              color: Colors.grey[500],
+                            ),
+                          );
+                        },
                       )
-                    : const Icon(
-                        Icons.person,
-                        size: 40,
-                        color: Colors.grey,
+                    : Container(
+                        width: isSmallScreen ? 70 : 90,
+                        height: isSmallScreen ? 90 : 110,
+                        color: Colors.grey[300],
+                        child: Icon(
+                          Icons.person,
+                          size: isSmallScreen ? 40 : 50,
+                          color: Colors.grey[500],
+                        ),
                       ),
               ),
-              const SizedBox(width: 16),
               
-              // Doctor info
+              SizedBox(width: isSmallScreen ? 12 : 16),
+              
+              // Doctor information
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Name and rating
+                    // Doctor name and rating
                     Row(
                       children: [
                         Expanded(
                           child: Text(
                             doctor.name,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 16 * textScale : 18 * textScale,
                               fontWeight: FontWeight.bold,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.star,
-                              color: Colors.amber,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              doctor.rating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.star,
+                                color: Colors.white,
+                                size: isSmallScreen ? 14 : 16,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 2),
+                              Text(
+                                doctor.rating.toString(),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: isSmallScreen ? 12 * textScale : 14 * textScale,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
+                    
                     const SizedBox(height: 4),
                     
                     // Specialization and experience
                     Text(
                       '${doctor.specializations != null && doctor.specializations!.isNotEmpty ? doctor.specializations!.first : doctor.qualification} · ${doctor.experience} Experience',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: TextStyle(
+                        fontSize: isSmallScreen ? 13 * textScale : 14 * textScale,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: isSmallScreen ? 6 : 8),
                     
                     // Hospital
                     Row(
                       children: [
                         Icon(
                           Icons.local_hospital_outlined,
-                          size: 16,
+                          size: isSmallScreen ? 14 : 16,
                           color: Theme.of(context).textTheme.bodySmall?.color,
                         ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             doctor.hospital,
-                            style: Theme.of(context).textTheme.bodySmall,
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 12 * textScale : 13 * textScale,
+                              color: Theme.of(context).textTheme.bodySmall?.color,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
                     
-                    // Address
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.location_on_outlined,
-                          size: 16,
-                          color: Theme.of(context).textTheme.bodySmall?.color,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            doctor.address,
-                            style: Theme.of(context).textTheme.bodySmall,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                    if (!isSmallScreen) const SizedBox(height: 4),
+                    
+                    // Address - hide on very small screens
+                    if (!isSmallScreen || screenWidth > 320)
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: isSmallScreen ? 14 : 16,
+                            color: Theme.of(context).textTheme.bodySmall?.color,
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              doctor.address,
+                              style: TextStyle(
+                                fontSize: isSmallScreen ? 12 * textScale : 13 * textScale,
+                                color: Theme.of(context).textTheme.bodySmall?.color,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    SizedBox(height: isSmallScreen ? 8 : 12),
                     
                     // Consultation fee and book button
                     Row(
@@ -299,11 +340,15 @@ class _DermatologistScreenState extends State<DermatologistScreen> {
                           children: [
                             Text(
                               'Consultation Fee',
-                              style: Theme.of(context).textTheme.bodySmall,
+                              style: TextStyle(
+                                fontSize: isSmallScreen ? 11 * textScale : 12 * textScale,
+                                color: Theme.of(context).textTheme.bodySmall?.color,
+                              ),
                             ),
                             Text(
                               '\$${doctor.consultationFee}',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              style: TextStyle(
+                                fontSize: isSmallScreen ? 15 * textScale : 16 * textScale,
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).primaryColor,
                               ),
@@ -322,11 +367,21 @@ class _DermatologistScreenState extends State<DermatologistScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).primaryColor,
                             foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isSmallScreen ? 12 : 16, 
+                              vertical: isSmallScreen ? 8 : 10
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text('Book Now'),
+                          child: Text(
+                            'Book Now',
+                            style: TextStyle(
+                              fontSize: isSmallScreen ? 13 * textScale : 14 * textScale,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
                     ),

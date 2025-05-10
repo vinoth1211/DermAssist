@@ -17,18 +17,25 @@ class ArticleService extends ChangeNotifier {
   
   // Constructor
   ArticleService() {
-    // Load initial articles
-    getAllArticles();
-    getFeaturedArticles();
+    // Initialize without automatically fetching data
+    // This prevents errors during widget building
+    Future.microtask(() {
+      getAllArticles();
+      getFeaturedArticles();
+    });
   }
   
   // Fetch all articles
   Future<List<ArticleModel>> getAllArticles() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-    
+    // Only update state if not in a build phase
     try {
+      if (!_isLoading) {
+        _isLoading = true;
+        _error = null;
+        // Use future microtask to avoid setState during build
+        Future.microtask(() => notifyListeners());
+      }
+      
       final snapshot = await _firestore
           .collection('articles')
           .orderBy('publishDate', descending: true)
@@ -36,23 +43,28 @@ class ArticleService extends ChangeNotifier {
       
       _articles = snapshot.docs.map((doc) => ArticleModel.fromMap(doc.data(), doc.id)).toList();
       _isLoading = false;
-      notifyListeners();
+      // Use future microtask to avoid setState during build
+      Future.microtask(() => notifyListeners());
       return _articles;
     } catch (e) {
       _isLoading = false;
       _error = 'Error fetching articles: $e';
-      notifyListeners();
+      // Use future microtask to avoid setState during build
+      Future.microtask(() => notifyListeners());
       return [];
     }
   }
   
   // Fetch featured articles
   Future<List<ArticleModel>> getFeaturedArticles() async {
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-    
     try {
+      if (!_isLoading) {
+        _isLoading = true;
+        _error = null;
+        // Use future microtask to avoid setState during build
+        Future.microtask(() => notifyListeners());
+      }
+      
       final snapshot = await _firestore
           .collection('articles')
           .where('featured', isEqualTo: true)
@@ -62,12 +74,14 @@ class ArticleService extends ChangeNotifier {
       
       _featuredArticles = snapshot.docs.map((doc) => ArticleModel.fromMap(doc.data(), doc.id)).toList();
       _isLoading = false;
-      notifyListeners();
+      // Use future microtask to avoid setState during build
+      Future.microtask(() => notifyListeners());
       return _featuredArticles;
     } catch (e) {
       _isLoading = false;
       _error = 'Error fetching featured articles: $e';
-      notifyListeners();
+      // Use future microtask to avoid setState during build
+      Future.microtask(() => notifyListeners());
       return [];
     }
   }
@@ -242,6 +256,11 @@ class ArticleService extends ChangeNotifier {
       notifyListeners();
       return [];
     }
+  }
+  
+  // Get saved articles (alias for getUserBookmarks for consistency)
+  Future<List<ArticleModel>> getSavedArticles(String userId) async {
+    return getUserBookmarks(userId);
   }
   
   // Check if an article is bookmarked by the user

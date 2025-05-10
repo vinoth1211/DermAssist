@@ -35,38 +35,39 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDermAssist2025KeyExample12345',
-    appId: '1:1234567890123:web:abc123def456ghi789',
-    messagingSenderId: '1234567890123',
-    projectId: 'dermassist-2025',
-    authDomain: 'dermassist-2025.firebaseapp.com',
-    storageBucket: 'dermassist-2025.appspot.com',
-    measurementId: 'G-MEASUREMENT123',
+    apiKey: 'AIzaSyDnC_i8ogsI0ZL4eLKHHBAANqgRYbd8f50',
+    appId: '1:188142561999:web:703af93fc35dca730f65ba',
+    messagingSenderId: '188142561999',
+    projectId: 'dermocare-4068a',
+    authDomain: 'dermocare-4068a.firebaseapp.com',
+    storageBucket: 'dermocare-4068a.firebasestorage.app',
+    measurementId: 'G-MEASUREMENT-ID',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDermAssistAndroidKeyExample12345',
-    appId: '1:1234567890123:android:abc123def456ghi789',
-    messagingSenderId: '1234567890123',
-    projectId: 'dermassist-2025',
-    storageBucket: 'dermassist-2025.appspot.com',
+    apiKey: 'AIzaSyDnC_i8ogsI0ZL4eLKHHBAANqgRYbd8f50',
+    appId: '1:188142561999:android:703af93fc35dca730f65ba',
+    messagingSenderId: '188142561999',
+    projectId: 'dermocare-4068a',
+    storageBucket: 'dermocare-4068a.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDermAssistIOSKeyExample12345',
-    appId: '1:1234567890123:ios:abc123def456ghi789',
-    messagingSenderId: '1234567890123',
-    projectId: 'dermassist-2025',
-    storageBucket: 'dermassist-2025.appspot.com',
-    iosClientId: '1234567890123-ios-abc123def456ghi789.apps.googleusercontent.com',
-    iosBundleId: 'com.example.skinDiseaseApp',
+    apiKey: 'AIzaSyDnC_i8ogsI0ZL4eLKHHBAANqgRYbd8f50',
+    appId: '1:188142561999:ios:703af93fc35dca730f65ba',
+    messagingSenderId: '188142561999',
+    projectId: 'dermocare-4068a',
+    storageBucket: 'dermocare-4068a.firebasestorage.app',
+    // You'll need to update these with actual values from your Firebase console
+    iosClientId: '188142561999-ios.apps.googleusercontent.com',
+    iosBundleId: 'com.dermo.dermocare',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyDermAssistWindowsKeyExample12345',
-    appId: '1:1234567890123:windows:abc123def456ghi789',
-    messagingSenderId: '1234567890123',
-    projectId: 'dermassist-2025',
-    storageBucket: 'dermassist-2025.appspot.com',
+    apiKey: 'AIzaSyDnC_i8ogsI0ZL4eLKHHBAANqgRYbd8f50',
+    appId: '1:188142561999:windows:703af93fc35dca730f65ba',
+    messagingSenderId: '188142561999',
+    projectId: 'dermocare-4068a',
+    storageBucket: 'dermocare-4068a.firebasestorage.app',
   );
 }
