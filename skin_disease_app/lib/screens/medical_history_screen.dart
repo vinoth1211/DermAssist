@@ -32,23 +32,27 @@ class _MedicalHistoryScreenState extends State<MedicalHistoryScreen> {
 
       if (authService.user != null) {
         final records = await diseaseService.getUserHealthRecords(authService.user!.uid);
-        setState(() {
-          _healthRecords = records;
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _healthRecords = records;
+            _isLoading = false;
+          });
+        }
       } else {
-        setState(() {
-          _healthRecords = [];
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _healthRecords = [];
+            _isLoading = false;
+          });
+        }
       }
     } catch (e) {
       print('Error loading medical history: $e');
-      setState(() {
-        _isLoading = false;
-      });
-
       if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to load medical history: $e'),

@@ -80,6 +80,11 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // Check if Firebase is properly initialized
+      if (FirebaseAuth.instance.app == null) {
+        throw Exception('Firebase Authentication not properly initialized');
+      }
+      
       final userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,

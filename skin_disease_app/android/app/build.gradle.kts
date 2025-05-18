@@ -19,6 +19,8 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
+        // Enable proper compatibility with Kotlin 1.8.22
+        freeCompilerArgs += listOf("-Xjvm-default=all")
     }
 
     defaultConfig {

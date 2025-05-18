@@ -41,7 +41,8 @@ class DefaultFirebaseOptions {
     projectId: 'dermocare-4068a',
     authDomain: 'dermocare-4068a.firebaseapp.com',
     storageBucket: 'dermocare-4068a.firebasestorage.app',
-    measurementId: 'G-MEASUREMENT-ID',
+    // Remove placeholder measurement ID as it's not required
+    // If you have the actual measurement ID, add it here
   );
 
   static const FirebaseOptions android = FirebaseOptions(

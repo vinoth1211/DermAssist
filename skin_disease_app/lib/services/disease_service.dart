@@ -328,39 +328,36 @@ class DiseaseService extends ChangeNotifier {
     }
   }
   
-  // Get user health records for medical history
+  // Get user's health records
   Future<List<HealthRecord>> getUserHealthRecords(String userId) async {
+    if (_isLoading) return [];
+    
     try {
-      if (!_isLoading) {
-        _isLoading = true;
-        _error = null;
-        // Use future microtask to avoid setState during build
-        Future.microtask(() => notifyListeners());
-      }
-      
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
       final snapshot = await _firestore
           .collection('health_records')
           .where('userId', isEqualTo: userId)
-          .orderBy('date', descending: true)
+          .orderBy('recordDate', descending: true)
           .get();
-      
-      final records = snapshot.docs.map((doc) {
-        final data = doc.data();
-        return HealthRecord.fromMap({
-          'id': doc.id,
-          ...data,
-        });
-      }).toList();
-      
+
+      final records = snapshot.docs
+          .map((doc) => HealthRecord.fromMap({
+                'id': doc.id,
+                ...doc.data(),
+              }))
+          .toList();
+
       _isLoading = false;
-      // Use future microtask to avoid setState during build
-      Future.microtask(() => notifyListeners());
+      notifyListeners();
       return records;
     } catch (e) {
+      print('Error getting health records: $e');
       _isLoading = false;
       _error = 'Error getting health records: $e';
-      // Use future microtask to avoid setState during build
-      Future.microtask(() => notifyListeners());
+      notifyListeners();
       return [];
     }
   }
