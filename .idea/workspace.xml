@@ -5,16 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1cd55e0c-b083-40cc-99e3-683ed44ba55f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/skin_disease_app/.metadata" beforeDir="false" afterPath="$PROJECT_DIR$/skin_disease_app/.metadata" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/skin_disease_app/android/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/skin_disease_app/android/app/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/skin_disease_app/android/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/skin_disease_app/android/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/skin_disease_app/android/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/skin_disease_app/android/gradle.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/skin_disease_app/android/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/skin_disease_app/android/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/skin_disease_app/android/settings.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/skin_disease_app/android/settings.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/skin_disease_app/lib/screens/splash_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/skin_disease_app/lib/screens/splash_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/skin_disease_app/lib/services/auth_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/skin_disease_app/lib/services/auth_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/skin_disease_app/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/skin_disease_app/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/skin_disease_app/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/skin_disease_app/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,6 +46,7 @@
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "D:/Git/Capstone-Project-Group-08/skin_disease_app",
+    "settings.editor.selected.configurable": "dart.settings",
     "show.migrate.to.gradle.popup": "false"
   }
 }]]></component>
