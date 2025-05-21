@@ -1,24 +1,6 @@
 {
   "indexes": [
     {
-      "collectionGroup": "appointments",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "userId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "dateTime",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
       "collectionGroup": "health_records",
       "queryScope": "COLLECTION",
       "fields": [
@@ -28,6 +10,24 @@
         },
         {
           "fieldPath": "recordDate",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "appointments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "userId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dateTime",
           "order": "DESCENDING"
         },
         {

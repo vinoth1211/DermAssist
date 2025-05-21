@@ -348,7 +348,7 @@ class DiseaseService extends ChangeNotifier {
     try {
       _isLoading = true;
       _error = null;
-      notifyListeners();
+      Future.microtask(() => notifyListeners());
 
       final snapshot =
           await _firestore
@@ -363,13 +363,13 @@ class DiseaseService extends ChangeNotifier {
               .toList();
 
       _isLoading = false;
-      notifyListeners();
+      Future.microtask(() => notifyListeners());
       return records;
     } catch (e) {
       print('Error getting health records: $e');
       _isLoading = false;
       _error = 'Error getting health records: $e';
-      notifyListeners();
+      Future.microtask(() => notifyListeners());
       return [];
     }
   }
