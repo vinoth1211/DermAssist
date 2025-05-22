@@ -6,16 +6,13 @@ class DoctorCard extends StatelessWidget {
   final DermatologistModel doctor;
   final VoidCallback onTap;
 
-  const DoctorCard({
-    super.key,
-    required this.doctor,
-    required this.onTap,
-  });
+  const DoctorCard({super.key, required this.doctor, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 160,
+      height: 200,
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
@@ -35,38 +32,44 @@ class DoctorCard extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Doctor image
                 CircleAvatar(
-                  radius: 40,
-                  backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                  child: doctor.imageUrl != null && doctor.imageUrl!.isNotEmpty
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(40),
-                          child: CachedNetworkImage(
-                            imageUrl: doctor.imageUrl!,
-                            width: 80,
-                            height: 80,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => const Center(
-                              child: CircularProgressIndicator(),
+                  radius: 35,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).primaryColor.withOpacity(0.1),
+                  child:
+                      doctor.imageUrl != null && doctor.imageUrl!.isNotEmpty
+                          ? ClipRRect(
+                            borderRadius: BorderRadius.circular(35),
+                            child: CachedNetworkImage(
+                              imageUrl: doctor.imageUrl!,
+                              width: 70,
+                              height: 70,
+                              fit: BoxFit.cover,
+                              placeholder:
+                                  (context, url) => const Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                              errorWidget:
+                                  (context, url, error) => const Icon(
+                                    Icons.person,
+                                    size: 35,
+                                    color: Colors.grey,
+                                  ),
                             ),
-                            errorWidget: (context, url, error) => const Icon(
-                              Icons.person,
-                              size: 40,
-                              color: Colors.grey,
-                            ),
+                          )
+                          : const Icon(
+                            Icons.person,
+                            size: 35,
+                            color: Colors.grey,
                           ),
-                        )
-                      : const Icon(
-                          Icons.person,
-                          size: 40,
-                          color: Colors.grey,
-                        ),
                 ),
-                const SizedBox(height: 12),
-                
+                const SizedBox(height: 8),
+
                 // Doctor name
                 Text(
                   doctor.name,
@@ -77,11 +80,12 @@ class DoctorCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 4),
-                
+                const SizedBox(height: 2),
+
                 // Specialization
                 Text(
-                  doctor.specializations != null && doctor.specializations!.isNotEmpty
+                  doctor.specializations != null &&
+                          doctor.specializations!.isNotEmpty
                       ? doctor.specializations!.first
                       : doctor.qualification,
                   style: Theme.of(context).textTheme.bodySmall,
@@ -89,18 +93,14 @@ class DoctorCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
-                
+                const SizedBox(height: 4),
+
                 // Rating
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.star,
-                      color: Colors.amber,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 4),
+                    const Icon(Icons.star, color: Colors.amber, size: 14),
+                    const SizedBox(width: 2),
                     Text(
                       doctor.rating.toStringAsFixed(1),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(

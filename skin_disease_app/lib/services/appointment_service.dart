@@ -145,9 +145,235 @@ class AppointmentService extends ChangeNotifier {
   AppointmentService() {
     // Initialize without immediately fetching data
     // This prevents errors during widget building
-    Future.microtask(() {
+    Future.microtask(() async {
+      await initializeSampleDoctors();
       getAllDermatologists();
     });
+  }
+
+  // Initialize sample doctors data
+  Future<void> initializeSampleDoctors() async {
+    try {
+      // Check if doctors collection is empty
+      final snapshot = await _firestore.collection('dermatologists').get();
+      if (snapshot.docs.isNotEmpty) {
+        return; // Don't initialize if data already exists
+      }
+
+      // Sample doctors data
+      final List<Map<String, dynamic>> sampleDoctors = [
+        {
+          'name': 'Dr. Sarah Johnson',
+          'qualification': 'MD, Dermatology',
+          'hospital': 'City General Hospital',
+          'experience': '15 years',
+          'address': '123 Medical Center Drive, Suite 400',
+          'phoneNumber': '+1 (555) 123-4567',
+          'email': 'sarah.johnson@hospital.com',
+          'imageUrl': 'https://randomuser.me/api/portraits/women/1.jpg',
+          'rating': 4.8,
+          'specializations': [
+            'Acne Treatment',
+            'Skin Cancer',
+            'Cosmetic Dermatology',
+          ],
+          'availableSlots': [
+            {
+              'date':
+                  DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+              'slots': [
+                '09:00 AM',
+                '10:00 AM',
+                '11:00 AM',
+                '02:00 PM',
+                '03:00 PM',
+              ],
+            },
+            {
+              'date':
+                  DateTime.now().add(const Duration(days: 2)).toIso8601String(),
+              'slots': [
+                '09:00 AM',
+                '10:00 AM',
+                '11:00 AM',
+                '02:00 PM',
+                '03:00 PM',
+              ],
+            },
+          ],
+          'consultationFee': 150,
+        },
+        {
+          'name': 'Dr. Michael Chen',
+          'qualification': 'MD, PhD, Dermatology',
+          'hospital': 'University Medical Center',
+          'experience': '12 years',
+          'address': '456 University Avenue, Building B',
+          'phoneNumber': '+1 (555) 234-5678',
+          'email': 'michael.chen@university.edu',
+          'imageUrl': 'https://randomuser.me/api/portraits/men/2.jpg',
+          'rating': 4.9,
+          'specializations': ['Pediatric Dermatology', 'Eczema', 'Psoriasis'],
+          'availableSlots': [
+            {
+              'date':
+                  DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+              'slots': [
+                '10:00 AM',
+                '11:00 AM',
+                '02:00 PM',
+                '03:00 PM',
+                '04:00 PM',
+              ],
+            },
+            {
+              'date':
+                  DateTime.now().add(const Duration(days: 2)).toIso8601String(),
+              'slots': [
+                '10:00 AM',
+                '11:00 AM',
+                '02:00 PM',
+                '03:00 PM',
+                '04:00 PM',
+              ],
+            },
+          ],
+          'consultationFee': 175,
+        },
+        {
+          'name': 'Dr. Emily Rodriguez',
+          'qualification': 'MD, Dermatology',
+          'hospital': 'Community Health Center',
+          'experience': '8 years',
+          'address': '789 Health Street, Suite 200',
+          'phoneNumber': '+1 (555) 345-6789',
+          'email': 'emily.rodriguez@community.org',
+          'imageUrl': 'https://randomuser.me/api/portraits/women/3.jpg',
+          'rating': 4.7,
+          'specializations': [
+            'Hair Disorders',
+            'Nail Disorders',
+            'General Dermatology',
+          ],
+          'availableSlots': [
+            {
+              'date':
+                  DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+              'slots': [
+                '09:30 AM',
+                '10:30 AM',
+                '11:30 AM',
+                '02:30 PM',
+                '03:30 PM',
+              ],
+            },
+            {
+              'date':
+                  DateTime.now().add(const Duration(days: 2)).toIso8601String(),
+              'slots': [
+                '09:30 AM',
+                '10:30 AM',
+                '11:30 AM',
+                '02:30 PM',
+                '03:30 PM',
+              ],
+            },
+          ],
+          'consultationFee': 125,
+        },
+        {
+          'name': 'Dr. James Wilson',
+          'qualification': 'MD, Dermatology',
+          'hospital': 'Private Practice',
+          'experience': '20 years',
+          'address': '321 Doctor Lane, Suite 100',
+          'phoneNumber': '+1 (555) 456-7890',
+          'email': 'james.wilson@private.com',
+          'imageUrl': 'https://randomuser.me/api/portraits/men/4.jpg',
+          'rating': 4.9,
+          'specializations': [
+            'Skin Cancer',
+            'Mohs Surgery',
+            'Cosmetic Procedures',
+          ],
+          'availableSlots': [
+            {
+              'date':
+                  DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+              'slots': [
+                '08:00 AM',
+                '09:00 AM',
+                '10:00 AM',
+                '01:00 PM',
+                '02:00 PM',
+              ],
+            },
+            {
+              'date':
+                  DateTime.now().add(const Duration(days: 2)).toIso8601String(),
+              'slots': [
+                '08:00 AM',
+                '09:00 AM',
+                '10:00 AM',
+                '01:00 PM',
+                '02:00 PM',
+              ],
+            },
+          ],
+          'consultationFee': 200,
+        },
+        {
+          'name': 'Dr. Lisa Patel',
+          'qualification': 'MD, Dermatology',
+          'hospital': 'Children\'s Hospital',
+          'experience': '10 years',
+          'address': '654 Pediatric Way, Building C',
+          'phoneNumber': '+1 (555) 567-8901',
+          'email': 'lisa.patel@childrens.org',
+          'imageUrl': 'https://randomuser.me/api/portraits/women/5.jpg',
+          'rating': 4.8,
+          'specializations': [
+            'Pediatric Dermatology',
+            'Birthmarks',
+            'Skin Infections',
+          ],
+          'availableSlots': [
+            {
+              'date':
+                  DateTime.now().add(const Duration(days: 1)).toIso8601String(),
+              'slots': [
+                '09:00 AM',
+                '10:00 AM',
+                '11:00 AM',
+                '02:00 PM',
+                '03:00 PM',
+              ],
+            },
+            {
+              'date':
+                  DateTime.now().add(const Duration(days: 2)).toIso8601String(),
+              'slots': [
+                '09:00 AM',
+                '10:00 AM',
+                '11:00 AM',
+                '02:00 PM',
+                '03:00 PM',
+              ],
+            },
+          ],
+          'consultationFee': 160,
+        },
+      ];
+
+      // Add sample doctors to Firestore
+      for (var doctor in sampleDoctors) {
+        await _firestore.collection('dermatologists').add(doctor);
+      }
+
+      print('Sample doctors data initialized successfully');
+    } catch (e) {
+      print('Error initializing sample doctors: $e');
+    }
   }
 
   // Get all dermatologists
