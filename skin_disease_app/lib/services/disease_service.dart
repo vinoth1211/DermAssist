@@ -437,7 +437,7 @@ class HealthRecord {
   Map<String, dynamic> toMap() {
     return {
       'userId': userId,
-      'date': Timestamp.fromDate(date),
+      'recordDate': Timestamp.fromDate(date),
       'type': type,
       'condition': condition,
       'description': description,
@@ -453,9 +453,9 @@ class HealthRecord {
       id: map['id'],
       userId: map['userId'],
       date:
-          map['date'] is Timestamp
-              ? (map['date'] as Timestamp).toDate()
-              : DateTime.parse(map['date']),
+          map['recordDate'] is Timestamp
+              ? (map['recordDate'] as Timestamp).toDate()
+              : DateTime.parse(map['recordDate']),
       type: map['type'],
       condition: map['condition'],
       description: map['description'],

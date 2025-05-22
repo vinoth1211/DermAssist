@@ -14,11 +14,12 @@ final List<Map<String, dynamic>> sampleDermatologists = [
     'imageUrl': 'https://randomuser.me/api/portraits/women/22.jpg',
     'rating': 4.8,
     'specializations': ['Medical Dermatology', 'Skin Cancer', 'Acne Treatment'],
-    'availableSlots': [
-      {'day': 'Monday', 'slots': ['09:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM']},
-      {'day': 'Wednesday', 'slots': ['09:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM']},
-      {'day': 'Friday', 'slots': ['09:00 AM', '10:00 AM', '11:00 AM']}
-    ],
+    'availableDays': ['Monday', 'Wednesday', 'Friday'],
+    'availableTimeSlots': {
+      'Monday': ['09:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM'],
+      'Wednesday': ['09:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM'],
+      'Friday': ['09:00 AM', '10:00 AM', '11:00 AM'],
+    },
     'consultationFee': 150,
   },
   {
@@ -33,10 +34,18 @@ final List<Map<String, dynamic>> sampleDermatologists = [
     'imageUrl': 'https://randomuser.me/api/portraits/men/32.jpg',
     'rating': 4.9,
     'specializations': ['Pediatric Dermatology', 'Eczema', 'Psoriasis'],
-    'availableSlots': [
-      {'day': 'Tuesday', 'slots': ['09:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM']},
-      {'day': 'Thursday', 'slots': ['09:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM']}
-    ],
+    'availableDays': ['Tuesday', 'Thursday'],
+    'availableTimeSlots': {
+      'Tuesday': [
+        '09:00 AM',
+        '10:00 AM',
+        '11:00 AM',
+        '2:00 PM',
+        '3:00 PM',
+        '4:00 PM',
+      ],
+      'Thursday': ['09:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM'],
+    },
     'consultationFee': 180,
   },
   {
@@ -50,12 +59,17 @@ final List<Map<String, dynamic>> sampleDermatologists = [
     'email': 'jessica.martinez@dermawellness.com',
     'imageUrl': 'https://randomuser.me/api/portraits/women/45.jpg',
     'rating': 4.7,
-    'specializations': ['Cosmetic Dermatology', 'Laser Treatments', 'Botox & Fillers'],
-    'availableSlots': [
-      {'day': 'Monday', 'slots': ['2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM']},
-      {'day': 'Wednesday', 'slots': ['1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM']},
-      {'day': 'Friday', 'slots': ['1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM']}
+    'specializations': [
+      'Cosmetic Dermatology',
+      'Laser Treatments',
+      'Botox & Fillers',
     ],
+    'availableDays': ['Monday', 'Wednesday', 'Friday'],
+    'availableTimeSlots': {
+      'Monday': ['2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'],
+      'Wednesday': ['1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'],
+      'Friday': ['1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM'],
+    },
     'consultationFee': 200,
   },
   {
@@ -70,10 +84,11 @@ final List<Map<String, dynamic>> sampleDermatologists = [
     'imageUrl': 'https://randomuser.me/api/portraits/men/67.jpg',
     'rating': 4.9,
     'specializations': ['Skin Cancer', 'Mohs Surgery', 'Clinical Research'],
-    'availableSlots': [
-      {'day': 'Tuesday', 'slots': ['08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM']},
-      {'day': 'Thursday', 'slots': ['08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM']}
-    ],
+    'availableDays': ['Tuesday', 'Thursday'],
+    'availableTimeSlots': {
+      'Tuesday': ['08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM'],
+      'Thursday': ['08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM'],
+    },
     'consultationFee': 175,
   },
 ];
@@ -81,11 +96,11 @@ final List<Map<String, dynamic>> sampleDermatologists = [
 // Function to add sample dermatologists to Firestore
 Future<void> addSampleDermatologists() async {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  
+
   for (var dermData in sampleDermatologists) {
     final docRef = firestore.collection('dermatologists').doc(dermData['id']);
     final docSnapshot = await docRef.get();
-    
+
     if (!docSnapshot.exists) {
       await docRef.set(dermData);
       print('Added dermatologist: ${dermData['name']}');
@@ -93,6 +108,6 @@ Future<void> addSampleDermatologists() async {
       print('Dermatologist ${dermData['name']} already exists, skipping...');
     }
   }
-  
+
   print('Sample dermatologists added successfully!');
 }
