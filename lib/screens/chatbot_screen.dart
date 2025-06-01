@@ -1,82 +1,418 @@
 import 'package:flutter/material.dart';
-import 'package:bubble/bubble.dart';
-import 'package:provider/provider.dart';
-import 'package:skin_disease_app/services/auth_service.dart';
-import 'package:skin_disease_app/widgets/custom_text_field.dart';
-import 'package:skin_disease_app/widgets/custom_button.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'shared_widgets.dart';
+import '../config/api_config.dart';
+import '../utils/theme.dart';
 
-class ChatMessage {
-  final String text;
-  final bool isUser;
-  final DateTime timestamp;
-
-  ChatMessage({
-    required this.text,
-    required this.isUser,
-    required this.timestamp,
-  });
-}
-
-class ChatbotScreen extends StatefulWidget {
-  const ChatbotScreen({super.key});
+class ChatBotScreen extends StatefulWidget {
+  const ChatBotScreen({super.key});
 
   @override
-  State<ChatbotScreen> createState() => _ChatbotScreenState();
+  State<ChatBotScreen> createState() => _ChatBotScreenState();
 }
 
-class _ChatbotScreenState extends State<ChatbotScreen> {
+class _ChatBotScreenState extends State<ChatBotScreen> {
   final TextEditingController _messageController = TextEditingController();
+  final List<Message> _messages = [];
   final ScrollController _scrollController = ScrollController();
-  final List<ChatMessage> _messages = [];
+  final ImagePicker _picker = ImagePicker();
+  File? _selectedImage;
   bool _isLoading = false;
+  bool _quotaExceeded = false; // Track quota status
+
+  // Replace with your actual Gemini API Key
+  static const String apiKey = ApiConfig.geminiApiKey;
+  late GenerativeModel _textModel;
+  late GenerativeModel _visionModel;
 
   @override
   void initState() {
     super.initState();
-    _addBotMessage(
-      'Hello! I\'m DermBot, your skin health assistant. How can I help you today?',
+    _initializeModels();
+  }
+
+  void _initializeModels() {
+    _textModel = GenerativeModel(
+      model: 'models/gemini-2.0-flash',
+      apiKey: apiKey,
     );
-    _addBotMessage(
-      'You can ask me questions about skin conditions, skincare routines, or general skin health information.',
+    _visionModel = GenerativeModel(
+      model: 'models/gemini-2.0-flash',
+      apiKey: apiKey,
     );
   }
 
   @override
-  void dispose() {
-    _messageController.dispose();
-    _scrollController.dispose();
-    super.dispose();
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      appBar: const CustomHeader(),
+      body: SafeArea(
+        child: Container(
+          color: theme.scaffoldBackgroundColor,
+          child: Column(
+            children: [
+              const CustomNavigationBar(activeRoute: 'Chat Bot'),
+              if (_quotaExceeded) _buildQuotaWarning(theme),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          itemCount: _messages.length,
+                          itemBuilder: (context, index) {
+                            return _buildMessageBubble(_messages[index], theme);
+                          },
+                        ),
+                      ),
+                      if (!_quotaExceeded) _buildQuickActions(theme),
+                      _buildInputArea(theme),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
-  void _addUserMessage(String message) {
+  Widget _buildQuotaWarning(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      color: AppTheme.warningColor.withOpacity(0.1),
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber, color: AppTheme.warningColor),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              "Service temporarily unavailable due to API quota limits. Please contact support.",
+              style: const TextStyle(
+                color: AppTheme.warningColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageBubble(Message message, ThemeData theme) {
+    final isUser = message.isUser;
+    final bubbleColor =
+        isUser ? theme.colorScheme.primary.withOpacity(0.1) : theme.cardColor;
+    final textColor =
+        isUser
+            ? theme.colorScheme.primary
+            : theme.textTheme.bodyLarge?.color ?? Colors.black;
+    return Align(
+      alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: bubbleColor,
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(20),
+              topRight: const Radius.circular(20),
+              bottomLeft: Radius.circular(isUser ? 20 : 4),
+              bottomRight: Radius.circular(isUser ? 4 : 20),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (message.image != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.file(
+                    message.image!,
+                    height: 150,
+                    width: 150,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              if (message.image != null) const SizedBox(height: 8),
+              Text(
+                message.text,
+                style: TextStyle(color: textColor, fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActions(ThemeData theme) {
+    final quickQuestions = [
+      'Dry and flaky skin remedies?',
+      'Acne on cheeks treatment?',
+      'How to fade dark spots?',
+      'Sensitive skin routine?',
+    ];
+
+    return Container(
+      height: 42,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: quickQuestions.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          return ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              elevation: 0,
+            ),
+            onPressed: () => _sendMessage(quickQuestions[index]),
+            child: Text(
+              quickQuestions[index],
+              style: TextStyle(color: theme.colorScheme.primary, fontSize: 13),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildInputArea(ThemeData theme) {
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon:
+                _selectedImage != null
+                    ? Badge(
+                      backgroundColor: theme.colorScheme.primary,
+                      child: Icon(
+                        Icons.image,
+                        color: theme.colorScheme.primary,
+                      ),
+                    )
+                    : Icon(Icons.image_outlined, color: theme.disabledColor),
+            onPressed: _quotaExceeded ? null : _pickImage,
+          ),
+          Expanded(
+            child: TextField(
+              controller: _messageController,
+              minLines: 1,
+              maxLines: 3,
+              enabled: !_quotaExceeded,
+              decoration: InputDecoration(
+                hintText:
+                    _quotaExceeded
+                        ? 'Service unavailable'
+                        : 'Ask about skin concerns...',
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+            ),
+          ),
+          IconButton(
+            icon:
+                _isLoading
+                    ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                    : Icon(Icons.send, color: theme.colorScheme.primary),
+            onPressed:
+                _quotaExceeded || _isLoading
+                    ? null
+                    : () {
+                      if (_messageController.text.isNotEmpty ||
+                          _selectedImage != null) {
+                        _sendMessage(_messageController.text);
+                      }
+                    },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() => _selectedImage = File(image.path));
+    }
+  }
+
+  Future<void> _sendMessage(String text) async {
+    if (text.trim().isEmpty && _selectedImage == null) return;
+
+    final messageText = text.trim();
+    final imageToSend = _selectedImage;
+
     setState(() {
       _messages.add(
-        ChatMessage(
-          text: message,
+        Message(
+          text:
+              messageText.isEmpty && imageToSend != null
+                  ? "Analyze this skin condition"
+                  : messageText,
           isUser: true,
-          timestamp: DateTime.now(),
+          image: imageToSend,
         ),
       );
+      _messageController.clear();
+      _isLoading = true;
+      _selectedImage = null;
     });
     _scrollToBottom();
+
+    try {
+      final response = await _getGeminiResponse(messageText, imageToSend);
+      if (response != null) {
+        setState(() {
+          _messages.add(Message(text: response, isUser: false));
+          _quotaExceeded = false; // Reset quota flag on success
+        });
+      } else {
+        throw Exception('No response received from the AI model');
+      }
+    } catch (e) {
+      final errorMessage = _handleApiError(e);
+      setState(() {
+        _messages.add(Message(text: errorMessage, isUser: false));
+        // Check if the error is quota related and set the flag based on message content
+        if (e.toString().contains("quota") ||
+            e.toString().contains("billing") ||
+            e.toString().contains("exceeded")) {
+          _quotaExceeded = true;
+        }
+      });
+      print('Chatbot Error: ${e.toString()}'); // Keep logging the raw error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+      _scrollToBottom();
+    }
   }
 
-  void _addBotMessage(String message) {
-    setState(() {
-      _messages.add(
-        ChatMessage(
-          text: message,
-          isUser: false,
-          timestamp: DateTime.now(),
-        ),
-      );
-    });
-    _scrollToBottom();
+  String _handleApiError(dynamic error) {
+    // Check error message string for keywords instead of relying on a specific exception type
+    if (error.toString().contains("quota") ||
+        error.toString().contains("billing") ||
+        error.toString().contains("exceeded")) {
+      return "I'm currently unavailable due to API quota limits. "
+          "Please contact support to resolve this issue.";
+    } else if (error.toString().contains('API key')) {
+      return "Authentication error. Please check API configuration.";
+    } else if (error.toString().contains('network')) {
+      return "Network error. Please check your internet connection.";
+    } else if (error.toString().contains('timeout')) {
+      return "Request timed out. Please try again.";
+    }
+    return "Sorry, something went wrong. Please try again later.";
+  }
+
+  Future<String?> _getGeminiResponse(String text, File? image) async {
+    const systemPrompt = """
+      You are a professional dermatology assistant. When responding to skin concerns:
+      1. First, analyze the condition briefly
+      2. Then, provide 2-3 recommended treatments
+      3. List key ingredients to look for in products
+      4. Finally, mention when to see a dermatologist
+      
+      Keep responses clear, concise, and structured with bullet points.
+      If the query is not related to skincare, politely redirect to skincare topics.
+    """;
+
+    try {
+      if (image != null) {
+        final imageBytes = await image.readAsBytes();
+        final prompt = """
+          $systemPrompt
+          
+          Analyze this skin condition image. User query: 
+          ${text.isEmpty ? "Please analyze this skin condition" : text}
+          
+          Format your response as follows:
+          📝 Analysis: [Brief analysis]
+          💊 Treatments: [List treatments]
+          🧪 Key Ingredients: [List ingredients]
+          ⚕️ When to See a Doctor: [Guidance]
+        """;
+
+        final response = await _visionModel.generateContent([
+          Content.text(prompt),
+          Content.data('image/jpeg', imageBytes),
+        ]);
+
+        final textResponse = response.text;
+        if (textResponse == null || textResponse.isEmpty) {
+          throw Exception('No response received from the AI model');
+        }
+        return textResponse;
+      } else {
+        if (text.isEmpty) return null;
+
+        final prompt = """
+          $systemPrompt
+          
+          User Query: $text
+          
+          Format your response as follows:
+          📝 Analysis: [Brief analysis]
+          💊 Treatments: [List treatments]
+          🧪 Key Ingredients: [List ingredients]
+          ⚕️ When to See a Doctor: [Guidance]
+        """;
+
+        final response = await _textModel.generateContent([
+          Content.text(prompt),
+        ]);
+        final textResponse = response.text;
+        if (textResponse == null || textResponse.isEmpty) {
+          throw Exception('No response received from the AI model');
+        }
+        return textResponse;
+      }
+    } catch (e) {
+      rethrow; // Rethrow to handle in calling function
+    }
   }
 
   void _scrollToBottom() {
-    // Add a slight delay to ensure the list has updated
-    Future.delayed(const Duration(milliseconds: 100), () {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
@@ -86,290 +422,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       }
     });
   }
+}
 
-  void _handleSubmit() async {
-    final message = _messageController.text.trim();
-    if (message.isEmpty) return;
+class Message {
+  final String text;
+  final bool isUser;
+  final File? image;
 
-    _addUserMessage(message);
-    _messageController.clear();
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Simulate a delay for the bot's response
-    // In a real app, this would be replaced with an actual API call to Dialogflow or another chatbot service
-    await Future.delayed(const Duration(seconds: 1));
-
-    _processMessage(message);
-
-    setState(() {
-      _isLoading = false;
-    });
-  }
-
-  void _processMessage(String message) {
-    // This is a simple rule-based response for demonstration
-    // In a real app, you would integrate with Dialogflow or a similar service
-    
-    final lowercaseMessage = message.toLowerCase();
-    
-    if (lowercaseMessage.contains('hello') || 
-        lowercaseMessage.contains('hi') || 
-        lowercaseMessage.contains('hey')) {
-      _addBotMessage('Hello! How can I help you with your skin health today?');
-    } else if (lowercaseMessage.contains('acne') || lowercaseMessage.contains('pimple')) {
-      _addBotMessage(
-        'Acne is a common skin condition that occurs when hair follicles become clogged with oil and dead skin cells. '
-        'It can cause pimples, blackheads, and whiteheads. Here are some tips:\n\n'
-        '• Wash your face twice daily with a gentle cleanser\n'
-        '• Use non-comedogenic products\n'
-        '• Don\'t pick or squeeze pimples\n'
-        '• Consider over-the-counter products with benzoyl peroxide or salicylic acid\n\n'
-        'Would you like to learn more about acne treatments?'
-      );
-    } else if (lowercaseMessage.contains('psoriasis')) {
-      _addBotMessage(
-        'Psoriasis is a chronic autoimmune condition that causes rapid skin cell growth, resulting in red, '
-        'scaly patches that can be itchy and painful. Common treatments include:\n\n'
-        '• Topical corticosteroids\n'
-        '• Vitamin D analogues\n'
-        '• Light therapy\n'
-        '• Oral medications for severe cases\n\n'
-        'It\'s important to see a dermatologist for proper diagnosis and treatment plan.'
-      );
-    } else if (lowercaseMessage.contains('eczema') || lowercaseMessage.contains('dermatitis')) {
-      _addBotMessage(
-        'Eczema (atopic dermatitis) is a condition that makes your skin red and itchy. It\'s common in children but can occur at any age. '
-        'To manage eczema:\n\n'
-        '• Moisturize your skin at least twice a day\n'
-        '• Identify and avoid triggers\n'
-        '• Take lukewarm (not hot) baths or showers\n'
-        '• Use gentle, fragrance-free soaps\n'
-        '• Apply prescribed medications as directed\n\n'
-        'Would you like to know more about specific eczema treatments?'
-      );
-    } else if (lowercaseMessage.contains('rash') || lowercaseMessage.contains('itchy')) {
-      _addBotMessage(
-        'Skin rashes can have many causes, including allergic reactions, infections, heat, or underlying medical conditions. '
-        'For temporary relief:\n\n'
-        '• Apply a cold compress\n'
-        '• Use over-the-counter hydrocortisone cream\n'
-        '• Take an antihistamine for itching\n'
-        '• Avoid scratching\n\n'
-        'If the rash is severe, spreads quickly, or is accompanied by other symptoms, please consult a healthcare provider.'
-      );
-    } else if (lowercaseMessage.contains('routine') || lowercaseMessage.contains('skincare')) {
-      _addBotMessage(
-        'A basic skincare routine should include:\n\n'
-        '1. Cleansing: Wash your face morning and night\n'
-        '2. Toning: Optional step to balance pH\n'
-        '3. Treatments: Apply serums for specific concerns\n'
-        '4. Moisturizing: Hydrate the skin\n'
-        '5. Sun protection: Use SPF 30+ during the day\n\n'
-        'Would you like personalized recommendations for your skin type?'
-      );
-    } else if (lowercaseMessage.contains('spf') || lowercaseMessage.contains('sunscreen')) {
-      _addBotMessage(
-        'Sunscreen is crucial for skin health! Here are some tips:\n\n'
-        '• Use SPF 30 or higher daily, even on cloudy days\n'
-        '• Apply 15-30 minutes before sun exposure\n'
-        '• Reapply every 2 hours, or after swimming/sweating\n'
-        '• Don\'t forget often-missed areas like ears, neck, and tops of feet\n'
-        '• Choose broad-spectrum protection against both UVA and UVB rays\n\n'
-        'Regular sunscreen use helps prevent skin cancer, premature aging, and hyperpigmentation.'
-      );
-    } else if (lowercaseMessage.contains('thank')) {
-      _addBotMessage('You\'re welcome! Is there anything else I can help you with?');
-    } else if (lowercaseMessage.contains('doctor') || lowercaseMessage.contains('dermatologist')) {
-      _addBotMessage(
-        'If you\'re looking to consult a dermatologist, you can book an appointment through our app! '
-        'Go to the "Doctors" section to view available dermatologists and schedule a virtual or in-person consultation.'
-      );
-    } else {
-      _addBotMessage(
-        'I\'m not sure I understand your question. Could you rephrase or ask about specific skin conditions, '
-        'skincare routines, or treatments? I\'m here to help with your skin health questions!'
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('DermBot Assistant'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () {
-              // Show information dialog
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('About DermBot'),
-                  content: const Text(
-                    'DermBot provides general information about skin conditions and skincare. '
-                    'It is not a substitute for professional medical advice, diagnosis, or treatment. '
-                    'Always seek the advice of a qualified health provider with any questions you may have.',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Understood'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Chat messages
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return _buildMessageBubble(message);
-              },
-            ),
-          ),
-          
-          // Bot is typing indicator
-          if (_isLoading)
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              alignment: Alignment.centerLeft,
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        const Text('DermBot is typing'),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Theme.of(context).primaryColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          
-          // Input area
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 3,
-                  offset: const Offset(0, -1),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: CustomTextField(
-                    controller: _messageController,
-                    labelText: 'Message',
-                    hintText: 'Type your question here...',
-                    maxLines: 3,
-                    minLines: 1,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: (_) => _handleSubmit(),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                CustomButton(
-                  onPressed: _handleSubmit,
-                  icon: Icons.send,
-                  text: 'Send',
-                  isLoading: _isLoading,
-                  width: 100,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMessageBubble(ChatMessage message) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        mainAxisAlignment: message.isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (!message.isUser) ...[
-            CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColor,
-              radius: 16,
-              child: const Text(
-                'DB',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          Flexible(
-            child: Bubble(
-              margin: const BubbleEdges.only(top: 6),
-              nip: message.isUser ? BubbleNip.rightBottom : BubbleNip.leftBottom,
-              color: message.isUser
-                  ? Theme.of(context).primaryColor
-                  : Theme.of(context).cardColor,
-              alignment: message.isUser ? Alignment.topRight : Alignment.topLeft,
-              child: Text(
-                message.text,
-                style: TextStyle(
-                  color: message.isUser ? Colors.white : null,
-                ),
-              ),
-            ),
-          ),
-          if (message.isUser) ...[
-            const SizedBox(width: 8),
-            CircleAvatar(
-              backgroundColor: Colors.grey[300],
-              radius: 16,
-              child: const Icon(
-                Icons.person,
-                size: 18,
-                color: Colors.grey,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
+  Message({required this.text, required this.isUser, this.image});
 }

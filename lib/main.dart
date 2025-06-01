@@ -28,7 +28,7 @@ import 'package:skin_disease_app/wrappers/auth_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   try {
     // Initialize Firebase with platform-specific options
     await Firebase.initializeApp(
@@ -39,7 +39,7 @@ void main() async {
     print('Failed to initialize Firebase: $e');
     // Show a user-friendly message or fallback to local data
   }
-  
+
   runApp(const MyApp());
 }
 
@@ -80,22 +80,22 @@ class MyApp extends StatelessWidget {
               '/terms_of_service': (context) => const TermsOfServiceScreen(),
               '/dermatologists': (context) => const DermatologistScreen(),
               '/disease_detection': (context) => const DiseaseDetectionScreen(),
-              '/chatbot': (context) => const ChatbotScreen(),
+              '/chatbot': (context) => const ChatBotScreen(),
             },
             onGenerateRoute: (settings) {
               if (settings.name == '/article_detail') {
                 final args = settings.arguments as Map<String, dynamic>;
                 return MaterialPageRoute(
-                  builder: (context) => ArticleDetailScreen(
-                    articleId: args['articleId'],
-                  ),
+                  builder:
+                      (context) =>
+                          ArticleDetailScreen(articleId: args['articleId']),
                 );
               } else if (settings.name == '/doctor_detail') {
                 final args = settings.arguments as Map<String, dynamic>;
                 return MaterialPageRoute(
-                  builder: (context) => DoctorDetailScreen(
-                    doctorId: args['doctorId'],
-                  ),
+                  builder:
+                      (context) =>
+                          DoctorDetailScreen(doctorId: args['doctorId']),
                 );
               }
               return null;

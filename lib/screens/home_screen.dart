@@ -28,8 +28,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadData() async {
     final articleService = Provider.of<ArticleService>(context, listen: false);
-    final appointmentService = Provider.of<AppointmentService>(context, listen: false);
-    
+    final appointmentService = Provider.of<AppointmentService>(
+      context,
+      listen: false,
+    );
+
     // Load featured articles and doctors in parallel
     await Future.wait([
       articleService.getFeaturedArticles(),
@@ -42,12 +45,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final authService = Provider.of<AuthService>(context);
     final articleService = Provider.of<ArticleService>(context);
     final appointmentService = Provider.of<AppointmentService>(context);
-    
+
     // Responsive sizing
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
     final textScale = MediaQuery.of(context).textScaleFactor;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('DermAssist'),
@@ -60,35 +63,23 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-              ),
+              decoration: BoxDecoration(color: Theme.of(context).primaryColor),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.white,
-                    child: Icon(
-                      Icons.person,
-                      size: 40,
-                      color: Colors.grey,
-                    ),
+                    child: Icon(Icons.person, size: 40, color: Colors.grey),
                   ),
                   const SizedBox(height: 10),
                   Text(
                     authService.user?.displayName ?? 'User',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                    ),
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
                   ),
                   Text(
                     authService.user?.email ?? '',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
               ),
@@ -107,7 +98,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileScreen(),
+                  ),
                 );
               },
             ),
@@ -150,22 +143,23 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: () async {
                 final confirmed = await showDialog<bool>(
                   context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Logout'),
-                    content: const Text('Are you sure you want to logout?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text('Cancel'),
+                  builder:
+                      (context) => AlertDialog(
+                        title: const Text('Logout'),
+                        content: const Text('Are you sure you want to logout?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text('Logout'),
+                          ),
+                        ],
                       ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text('Logout'),
-                      ),
-                    ],
-                  ),
                 );
-                
+
                 if (confirmed == true) {
                   await authService.signOut();
                   if (!mounted) return;
@@ -205,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               SizedBox(height: isSmallScreen ? 20.0 : 30.0),
-              
+
               // Quick access features
               GridView.count(
                 shrinkWrap: true,
@@ -257,16 +251,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ChatbotScreen(),
+                          builder: (context) => const ChatBotScreen(),
                         ),
                       );
                     },
                   ),
                 ],
               ),
-              
+
               SizedBox(height: isSmallScreen ? 24.0 : 32.0),
-              
+
               // Featured Articles
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -292,61 +286,66 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               SizedBox(height: isSmallScreen ? 8.0 : 12.0),
-              
+
               articleService.isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : articleService.featuredArticles.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 20.0),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.article_outlined,
-                                  size: isSmallScreen ? 40 : 50,
-                                  color: Colors.grey[400],
-                                ),
-                                SizedBox(height: isSmallScreen ? 8.0 : 12.0),
-                                Text(
-                                  'No featured articles available',
-                                  style: TextStyle(
-                                    fontSize: isSmallScreen ? 14 * textScale : 16 * textScale,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
+                  ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20.0),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.article_outlined,
+                            size: isSmallScreen ? 40 : 50,
+                            color: Colors.grey[400],
+                          ),
+                          SizedBox(height: isSmallScreen ? 8.0 : 12.0),
+                          Text(
+                            'No featured articles available',
+                            style: TextStyle(
+                              fontSize:
+                                  isSmallScreen
+                                      ? 14 * textScale
+                                      : 16 * textScale,
+                              color: Colors.grey[600],
                             ),
                           ),
-                        )
-                      : SizedBox(
-                          height: isSmallScreen ? 200 : 240,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: articleService.featuredArticles.length,
-                            itemBuilder: (context, index) {
-                              final article = articleService.featuredArticles[index];
-                              return Padding(
-                                padding: EdgeInsets.only(right: isSmallScreen ? 10.0 : 12.0),
-                                child: SizedBox(
-                                  width: isSmallScreen ? screenWidth * 0.7 : 280,
-                                  child: ArticleCard(
-                                    article: article,
-                                    onTap: () {
-                                      Navigator.pushNamed(
-                                        context,
-                                        '/article_detail',
-                                        arguments: {'articleId': article.id},
-                                      );
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
+                        ],
+                      ),
+                    ),
+                  )
+                  : SizedBox(
+                    height: isSmallScreen ? 200 : 240,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: articleService.featuredArticles.length,
+                      itemBuilder: (context, index) {
+                        final article = articleService.featuredArticles[index];
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            right: isSmallScreen ? 10.0 : 12.0,
                           ),
-                        ),
-              
+                          child: SizedBox(
+                            width: isSmallScreen ? screenWidth * 0.7 : 280,
+                            child: ArticleCard(
+                              article: article,
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  '/article_detail',
+                                  arguments: {'articleId': article.id},
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
               SizedBox(height: isSmallScreen ? 20.0 : 24.0),
-              
+
               // Top Dermatologists
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -372,60 +371,66 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               SizedBox(height: isSmallScreen ? 8.0 : 12.0),
-              
+
               appointmentService.isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : appointmentService.doctors.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 20.0),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.person_outlined,
-                                  size: isSmallScreen ? 40 : 50,
-                                  color: Colors.grey[400],
-                                ),
-                                SizedBox(height: isSmallScreen ? 8.0 : 12.0),
-                                Text(
-                                  'No dermatologists available',
-                                  style: TextStyle(
-                                    fontSize: isSmallScreen ? 14 * textScale : 16 * textScale,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
+                  ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20.0),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.person_outlined,
+                            size: isSmallScreen ? 40 : 50,
+                            color: Colors.grey[400],
+                          ),
+                          SizedBox(height: isSmallScreen ? 8.0 : 12.0),
+                          Text(
+                            'No dermatologists available',
+                            style: TextStyle(
+                              fontSize:
+                                  isSmallScreen
+                                      ? 14 * textScale
+                                      : 16 * textScale,
+                              color: Colors.grey[600],
                             ),
                           ),
-                        )
-                      : SizedBox(
-                          height: isSmallScreen ? 170 : 200,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: appointmentService.doctors.length > 5
-                                ? 5
-                                : appointmentService.doctors.length,
-                            itemBuilder: (context, index) {
-                              final doctor = appointmentService.doctors[index];
-                              return Padding(
-                                padding: EdgeInsets.only(right: isSmallScreen ? 10.0 : 12.0),
-                                child: SizedBox(
-                                  width: isSmallScreen ? 140 : 160,
-                                  child: DoctorCard(
-                                    doctor: doctor,
-                                    onTap: () {
-                                      Navigator.pushNamed(
-                                        context,
-                                        '/doctor_detail',
-                                        arguments: {'doctorId': doctor.id},
-                                      );
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
+                        ],
+                      ),
+                    ),
+                  )
+                  : SizedBox(
+                    height: isSmallScreen ? 170 : 200,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount:
+                          appointmentService.doctors.length > 5
+                              ? 5
+                              : appointmentService.doctors.length,
+                      itemBuilder: (context, index) {
+                        final doctor = appointmentService.doctors[index];
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            right: isSmallScreen ? 10.0 : 12.0,
                           ),
-                        ),
+                          child: SizedBox(
+                            width: isSmallScreen ? 140 : 160,
+                            child: DoctorCard(
+                              doctor: doctor,
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  '/doctor_detail',
+                                  arguments: {'doctorId': doctor.id},
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
             ],
           ),
         ),
